@@ -1,0 +1,19 @@
+{
+  "name": "beeclaimer-server",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js",
+    "bot": "node src/bot/bot.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.7.3",
+    "telegraf": "^4.16.3"
+  }
+}

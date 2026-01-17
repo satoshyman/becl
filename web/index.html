@@ -1,0 +1,210 @@
+<script src='//libtl.com/sdk.js' data-zone='10428594' data-sdk='show_10428594'></script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BeeClaimer- Perfect Fit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        :root { --gold: #FFD700; --card-bg: rgba(18, 18, 18, 0.8); --border: rgba(255, 215, 0, 0.2); --spacing: 12px; }
+        body { margin: 0; padding: 0; height: 100vh; background: #000; color: white; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
+        .bg-glow { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #000 80%); z-index: -1; }
+        .container { width: 100%; max-width: 420px; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; height: 100vh; }
+        .app-title { font-weight: 900; color: var(--gold); letter-spacing: 2px; font-size: clamp(18px, 5vw, 22px); margin: 10px 0; text-align: center; text-transform: uppercase; flex-shrink: 0; cursor: pointer; }
+        .page { display: none; width: 100%; flex-direction: column; flex-grow: 1; margin-bottom: 80px; }
+        .active-page { display: flex; animation: fadeIn 0.3s ease; }
+        
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.8) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .wallet-card { width: 100%; background: linear-gradient(135deg, #1e1b0a 0%, #000000 100%); border-radius: 25px; border: 1px solid var(--gold); padding: 20px; box-sizing: border-box; text-align: center; margin-bottom: var(--spacing); box-shadow: 0 10px 30px rgba(255, 215, 0, 0.1); flex-shrink: 0; transition: transform 0.2s; }
+        .wallet-card:active { transform: scale(0.98); }
+        .bal-label { font-size: 11px; font-weight: 800; color: var(--gold); opacity: 0.8; text-transform: uppercase; }
+        .bal-val { font-size: clamp(30px, 10vw, 45px); font-weight: 900; margin: 5px 0; color: #fff; letter-spacing: -1px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; flex-grow: 1; align-content: stretch; }
+        .card { border-radius: 22px; padding: 15px 10px; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 20px rgba(0,0,0,0.3); justify-content: space-between; }
+        .card:active { transform: scale(0.95); }
+        
+        .icon-box { display: inline-block; transition: transform 0.3s ease; }
+        .ready-glow { animation: readyPulse 2s infinite; border-color: var(--gold); }
+        .ready-glow .icon-box { animation: iconWobble 1.5s infinite ease-in-out; }
+        
+        @keyframes readyPulse { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
+        @keyframes iconWobble { 0% { transform: scale(1) rotate(0deg); } 25% { transform: scale(1.1) rotate(5deg); } 50% { transform: scale(1.1) rotate(-5deg); } 100% { transform: scale(1) rotate(0deg); } }
+        
+        .card-daily { background: linear-gradient(135deg, #2d1b4e 0%, #160d26 100%); border-color: #6c4ab6; }
+        .card-mine { background: linear-gradient(135deg, #0f2d4e 0%, #061626 100%); border-color: #007bff; }
+        .card-faucet { grid-column: span 2; flex-direction: row; justify-content: space-between; padding: 12px 20px; align-items: center; background: linear-gradient(135deg, #4e3a0f 0%, #261c06 100%); border-color: #ff9900; max-height: 80px; margin-top: 5px; }
+        .btn-main { background: var(--gold); color: #000; border: none; padding: 12px; border-radius: 16px; font-weight: 900; width: 100%; cursor: pointer; font-size: 12px; transition: 0.2s; text-transform: uppercase; }
+        .btn-main:active { transform: scale(0.92); }
+        .btn-main:disabled { background: rgba(0,0,0,0.4); color: #777; cursor: not-allowed; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-small { padding: 10px; font-size: 11px; margin-top: 10px; }
+        .timer-text { font-size: 12px; color: #fff; font-weight: 800; margin-top: 5px; display: block; text-shadow: 0 2px 4px rgba(0,0,0,0.5); background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 10px; }
+        .speed-up-tag { position: absolute; top: -10px; right: 10px; background: #ff3b3b; color: white; font-size: 9px; padding: 5px 12px; border-radius: 20px; font-weight: 900; display: none; box-shadow: 0 4px 10px rgba(255, 59, 59, 0.3); z-index: 10; cursor: pointer; }
+        .nav-bar { position: fixed; bottom: 15px; width: 92%; max-width: 380px; background: rgba(18,18,18,0.95); border: 1px solid var(--border); height: 70px; border-radius: 25px; display: flex; justify-content: space-around; align-items: center; backdrop-filter: blur(20px); z-index: 1000; }
+        .nav-item { text-align: center; opacity: 0.3; transition: 0.3s; flex: 1; cursor: pointer; }
+        .nav-item.active { opacity: 1; color: var(--gold); transform: translateY(-5px); }
+        .nav-item span { font-size: 11px; font-weight: 800; display: block; margin-top: 6px; }
+        
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 99999; justify-content: center; align-items: center; padding: 25px; backdrop-filter: blur(8px); }
+        .modal-content { background: #0f0f0f; width: 100%; max-width: 360px; border-radius: 35px; border: 1px solid var(--gold); padding: 30px; box-sizing: border-box; text-align: center; animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: 90vh; overflow-y: auto; }
+        
+        .withdraw-history { margin-top: 20px; text-align: left; background: rgba(255,255,255,0.03); border-radius: 20px; padding: 15px; border: 1px solid rgba(255,215,0,0.1); }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 10px; }
+        .history-item:last-child { border-bottom: none; }
+        
+        .ref-withdraw-box { margin-top: 20px; padding: 12px; border: 1px solid rgba(255, 215, 0, 0.15); background: rgba(255, 255, 255, 0.03); border-radius: 18px; font-size: 11px; }
+        .ref-withdraw-box a { color: var(--gold); text-decoration: none; font-weight: bold; }
+        .amt-tag { font-size: 11px; color: var(--gold); font-weight: 900; margin-bottom: 5px; }
+        .ref-stats-container { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
+        .ref-stat-card { background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.1); border-radius: 15px; padding: 10px; flex: 1; }
+        .ref-stat-card small { font-size: 9px; color: var(--gold); text-transform: uppercase; display: block; margin-bottom: 4px; }
+        .ref-stat-card span { font-size: 16px; font-weight: 900; }
+        .amc-modal { display: none; position: fixed; inset: 0; background: #000; z-index: 100000; overflow-y: auto; padding: 20px; }
+        .amc-card { background: #111; border: 1px solid #333; border-radius: 20px; padding: 15px; margin-bottom: 15px; }
+        .amc-label { display: block; font-size: 11px; color: var(--gold); margin: 10px 0 5px 0; text-transform: uppercase; font-weight: bold; }
+        .amc-input { width: 100%; background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 12px; box-sizing: border-box; outline: none; font-size: 13px; }
+        .amc-btn { background: var(--gold); color: #000; border: none; padding: 15px; border-radius: 15px; width: 100%; font-weight: 900; margin-top: 10px; cursor: pointer; text-transform: uppercase; }
+        .amc-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .amc-stat-box { background: #000; padding: 12px; border-radius: 15px; text-align: center; border: 1px solid #222; }
+        .withdraw-input-group { position: relative; width: 100%; margin-bottom: 15px; }
+        .max-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--gold); color: #000; border: none; padding: 5px 10px; border-radius: 8px; font-size: 10px; font-weight: 900; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <div class="container">
+        <div class="app-title" id="titleHandler">BeeClaimer </div>
+
+        <div id="homePage" class="page active-page">
+            <div class="wallet-card">
+                <div class="bal-label">Total Available Balance</div>
+                <div class="bal-val">
+                    <span style="color: #0088cc; font-size: 32px; filter: drop-shadow(0 0 8px #0088cc);">💎</span>
+                    <span id="mainBal">0.0000</span> 
+                    <small style="font-size: 16px; opacity: 0.4;">TON</small>
+                </div>
+                <button class="btn-main" onclick="openModal('wModal')" style="width: 70%; margin: 8px auto 0 auto;">Withdraw Funds</button>
+            </div>
+
+            <div class="grid">
+                <div class="card card-daily ready-glow" id="dailyCard">
+                    <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                        <span class="icon-box" style="font-size:35px;">🎁</span>
+                        <h3 style="font-size:13px; margin:8px 0 2px 0; color: #d1b3ff;">Daily Gift</h3>
+                        <div class="amt-tag" id="ui_daily_val">(+0.0001)</div>
+                        <span id="dailyTimer" class="timer-text">Ready</span>
+                    </div>
+                    <button id="dailyBtn" class="btn-main btn-small" onclick="claimDaily()">Claim Bonus</button>
+                </div>
+
+                <div class="card card-mine ready-glow" id="mineCard">
+                    <div id="speedMineTag" class="speed-up-tag" onclick="speedUp('mine')" style="display: block;">⚡ SPEED UP</div>
+                    <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                        <span class="icon-box" style="font-size:35px;">⛏️</span>
+                        <h3 style="font-size:13px; margin:8px 0 2px 0; color: #b3d9ff;">Mining</h3>
+                        <div class="amt-tag" id="ui_mine_val" style="color:#007bff;">(+0.00001)</div>
+                        <span id="mineTimer" class="timer-text">Ready</span>
+                    </div>
+                    <button id="mineBtn" class="btn-main btn-small" onclick="startAction('mine')">Start</button>
+                </div>
+
+                <div class="card card-faucet ready-glow" id="faucetCard">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <span class="icon-box" style="font-size:34px;">🍯</span>
+                        <div style="text-align:left;">
+                            <h3 style="margin:0; font-size:14px; color: #ffd9b3;">Honey Faucet</h3>
+                            <div class="amt-tag" id="ui_faucet_val" style="margin:0; font-size:10px;">(+0.00001)</div>
+                            <span id="faucetTimer" class="timer-text">Ready</span>
+                        </div>
+                    </div>
+                    <button id="faucetBtn" class="btn-main" style="width:110px;" onclick="startAction('faucet')">Claim</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tasksPage" class="page">
+            <div class="wallet-card" style="padding:16px;">
+                <div class="bal-label">Project Tasks</div>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button class="btn-main" style="flex:1;" onclick="reloadTasks()">Refresh</button>
+                    <button class="btn-main" style="flex:1; background:#111; color:var(--gold); border:1px solid var(--gold);" onclick="showPage('home')">Back</button>
+                </div>
+            </div>
+
+            <div id="tasksGrid" class="grid" style="align-content:start;">
+                <!-- injected -->
+            </div>
+        </div>
+
+
+        <div id="refPage" class="page">
+            <div class="wallet-card" style="flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
+                <span style="font-size:60px;">👥</span>
+                <h2 style="margin:15px 0 10px 0;">Referral Hub</h2>
+                <div class="ref-stats-container">
+                    <div class="ref-stat-card"><small>Total Friends</small><span id="friendCount">0</span></div>
+                    <div class="ref-stat-card"><small>Commission Earned</small><span id="refCommission">0.0000</span></div>
+                </div>
+                <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; font-size:12px; color:var(--gold); margin-bottom: 20px;">🤝 Earn <span id="ui_ref_percent">10</span>% commission instantly!</div>
+                <div style="background:#000; border:1px dashed var(--border); padding:16px; border-radius:15px; font-size:11px; word-break:break-all; color:#aaa;" id="refURL">Loading...</div>
+                <button class="btn-main" style="margin-top:25px; width: 80%; align-self: center;" onclick="copyRef()">Copy Link</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active" id="navHome" onclick="showPage('home')">🏠<span>Home</span></div>
+        <div class="nav-item" id="navTasks" onclick="showPage('tasks')">✅<span>Tasks</span></div>
+        <div class="nav-item" id="navRef" onclick="showPage('ref')">👥<span>Friends</span></div>
+    </div>
+
+    <div id="wModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color:var(--gold); margin:0 0 10px 0;">Withdraw</h2>
+            <div style="font-size: 13px; color: #888; margin-bottom: 20px;">Min Payout: <b id="ui_min_withdraw" style="color:#fff;">0.0001</b> TON</div>
+            <select id="withdrawMethod" style="width:100%; padding:15px; border-radius:15px; border:1px solid #333; background:#000; color:#fff; text-align:center; margin-bottom:12px; box-sizing:border-box; outline:none; font-size: 13px;" onchange="onWithdrawMethodChange()">
+              <option value="FAUCETPAY_TON">FaucetPay (TON)</option>
+              <option value="BINANCE_USDT_BEP20">Binance ID (USDT - BEP20)</option>
+            </select>
+
+            <input type="text" id="binanceIdInp" placeholder="Binance ID" style="display:none; width:100%; padding:15px; border-radius:15px; border:1px solid #333; background:#000; color:#fff; text-align:center; margin-bottom:12px; box-sizing:border-box; outline:none; font-size: 13px;">
+
+            
+            <input type="email" id="emailInp" placeholder="FaucetPay Email Address (TON)" style="width:100%; padding:15px; border-radius:15px; border:1px solid #333; background:#000; color:#fff; text-align:center; margin-bottom:12px; box-sizing:border-box; outline:none; font-size: 13px;">
+            
+            <div class="withdraw-input-group">
+                <input type="number" id="withdrawAmtInp" placeholder="Amount to Withdraw" step="0.0001" style="width:100%; padding:15px; border-radius:15px; border:1px solid #333; background:#000; color:#fff; text-align:center; box-sizing:border-box; outline:none; font-size: 13px;">
+                <button class="max-btn" onclick="setMaxWithdraw()">MAX</button>
+            </div>
+            
+            <button class="btn-main" id="withdrawBtn" onclick="requestWithdraw()" style="margin-top:10px;">Request Payout</button>
+            
+            <div class="withdraw-history">
+                <div style="font-size: 11px; font-weight: 900; color: var(--gold); border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 5px; margin-bottom: 8px; text-transform: uppercase;">Recent History</div>
+                <div id="userWithdrawList" style="max-height: 120px; overflow-y: auto;">
+                    <div style="font-size:10px; opacity:0.5; text-align:center; padding:10px;">No records yet</div>
+                </div>
+            </div>
+
+            <div class="ref-withdraw-box">Don't have a FaucetPay wallet?<br><a href="https://faucetpay.io/?r=362774" target="_blank">Register here</a></div>
+            <div onclick="closeModal('wModal')" style="margin-top:25px; font-size:13px; opacity:0.6; cursor:pointer; font-weight:700;">Close Window</div>
+        </div>
+    </div>
+
+    <div id="successModal" class="modal-overlay"><div class="modal-content"><span id="successIcon" style="font-size: 70px;">✅</span><h2 id="successTitle" style="margin:20px 0 10px 0;">Awesome!</h2><div id="successAmt" style="color:var(--gold); font-size: 36px; font-weight: 900; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; gap: 10px;"><span style="color: #0088cc; font-size: 30px;">💎</span><span id="amtText">+0.00001</span></div><button class="btn-main" onclick="closeModal('successModal')">Collect</button><button class="btn-main" style="margin-top:15px; background:#00ff88; font-size:12px;" onclick="doubleReward()">🔥 Double Reward (Ad)</button></div></div>
+    <div id="amcPanel" class="amc-modal"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h2 style="color:var(--gold); margin:0;">SUPER AMC v3.0</h2><button onclick="closeAmc()" style="background:red; color:white; border:none; padding:8px 15px; border-radius:10px; font-weight:bold;">X</button></div><div class="amc-card"><div class="amc-stats-grid"><div class="amc-stat-box"><small style="color:#666;">Users</small><br><b id="amc_total_users">0</b></div><div class="amc-stat-box"><small style="color:#666;">Requests</small><br><b id="amc_total_req">0</b></div></div></div><div class="amc-card"><h3 style="font-size:14px; color:var(--gold); border-bottom:1px solid #333; padding-bottom:10px;">🔑 Security & API</h3><label class="amc-label">FaucetPay API Key</label><input type="text" id="inp_api" class="amc-input" placeholder="Paste FaucetPay API Key"></div><div class="amc-card"><h3 style="font-size:14px; color:var(--gold); border-bottom:1px solid #333; padding-bottom:10px;">💰 Rewards & Limits</h3><label class="amc-label">Mining Reward</label><input type="number" id="inp_mine" class="amc-input" step="0.00001"><label class="amc-label">Faucet Reward</label><input type="number" id="inp_faucet" class="amc-input" step="0.00001"><label class="amc-label">Daily Bonus</label><input type="number" id="inp_daily" class="amc-input" step="0.0001"><label class="amc-label">Min Withdraw</label><input type="number" id="inp_min" class="amc-input" step="0.0001"><label class="amc-label">Ref Commission %</label><input type="number" id="inp_ref" class="amc-input"></div><div class="amc-card"><h3 style="font-size:14px; color:#00ff88; border-bottom:1px solid #333; padding-bottom:10px;">📢 Ads Links</h3><label class="amc-label">Mining Ad URL</label><input type="text" id="ad_mine" class="amc-input"><label class="amc-label">Faucet Ad URL</label><input type="text" id="ad_faucet" class="amc-input"><label class="amc-label">Daily Ad URL</label><input type="text" id="ad_daily" class="amc-input"><label class="amc-label">Double Ad URL</label><input type="text" id="ad_double" class="amc-input"></div><button class="amc-btn" onclick="saveAmcSettings()">SAVE ALL CHANGES</button><div class="amc-card" style="margin-top:20px;"><h3 style="font-size:14px; color:var(--gold);">💸 Payout History</h3><div id="amc_req_list"></div></div></div>
+
+<script src="./app.js"></script>
+</body>
+</html>
