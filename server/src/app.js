@@ -6,10 +6,11 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// ✅ Serve the WebApp (web/index.html) from the same Render service
+// ✅ Serve the WebApp from /web (same Render service)
 const WEB_DIR = path.join(__dirname, "../../web");
 app.use(express.static(WEB_DIR));
 
@@ -17,21 +18,21 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(WEB_DIR, "index.html"));
 });
 
-// (اختياري) صحة السيرفر
+// Health check
 app.get("/health", (req, res) => {
   res.json({ ok: true });
 });
 
-// ✅ Start server
+// ✅ Start server (Render requires binding to 0.0.0.0)
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Server running on port", PORT);
 });
 
-// ✅ Start bot (runs in same service, no Background Worker needed)
-// لو بوتك متربط من ملف تاني، سيب السطر ده كما هو أو عدّله حسب مسار البوت عندك.
+// ✅ Start bot inside same service (no Background Worker)
 try {
-  require("./bot/start-bot"); // لو الملف ده موجود عندك
+  // Your bot file is: server/src/bot/bot.js
+  require("./bot/bot.js");
+  console.log("Bot started from app.js");
 } catch (e) {
-  // لو البوت عندك في مسار مختلف، تجاهل هنا وهنظبطه
-  console.log("Bot autostart skipped (check bot path).");
+  console.error("Bot failed to start:", e);
 }
