@@ -1,36 +1,37 @@
-import express from 'express';
-import cors from 'cors';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import apiRouter from './routes/api.js';
-
-dotenv.config();
+const path = require("path");
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json({ limit: '1mb' }));
+const PORT = process.env.PORT || 3000;
 
-app.use('/api', apiRouter);
+app.use(cors());
+app.use(express.json());
 
-app.get('/', (req, res) => res.send('BeeClaimer Server OK'));
+// ✅ Serve the WebApp (web/index.html) from the same Render service
+const WEB_DIR = path.join(__dirname, "../../web");
+app.use(express.static(WEB_DIR));
 
-const PORT = process.env.PORT || 8080;
-const MONGODB_URI = process.env.MONGODB_URI;
-
-async function start() {
-  if (!MONGODB_URI) {
-    console.error('MONGODB_URI missing');
-    process.exit(1);
-  }
-  await mongoose.connect(MONGODB_URI);
-  console.log('Connected to MongoDB');
-
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server listening on 0.0.0.0:${PORT}`);
-  });
-}
-
-start().catch((e) => {
-  console.error('Failed to start:', e);
-  process.exit(1);
+app.get("/", (req, res) => {
+  res.sendFile(path.join(WEB_DIR, "index.html"));
 });
+
+// (اختياري) صحة السيرفر
+app.get("/health", (req, res) => {
+  res.json({ ok: true });
+});
+
+// ✅ Start server
+app.listen(PORT, "0.0.0.0", () => {
+  console.log("Server running on port", PORT);
+});
+
+// ✅ Start bot (runs in same service, no Background Worker needed)
+// لو بوتك متربط من ملف تاني، سيب السطر ده كما هو أو عدّله حسب مسار البوت عندك.
+try {
+  require("./bot/start-bot"); // لو الملف ده موجود عندك
+} catch (e) {
+  // لو البوت عندك في مسار مختلف، تجاهل هنا وهنظبطه
+  console.log("Bot autostart skipped (check bot path).");
+}
